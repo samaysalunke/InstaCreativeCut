@@ -81,11 +81,14 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onClose }) => {
   return (
     <div className="w-full h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-gray-800 p-3 flex items-center justify-between">
+      <div className="border-b border-gray-800 p-3 flex items-center justify-between sticky top-0 bg-background z-10">
         <h2 className="text-xl font-semibold">Media Library</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>
+            <X className="h-4 w-4 mr-1" />
+            Close
+          </Button>
+        </div>
       </div>
       
       {/* Main content */}
@@ -135,39 +138,50 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onClose }) => {
         
         {/* Right content (media grid) */}
         <div className="flex-grow flex flex-col overflow-hidden">
-          {/* Search and upload */}
-          <div className="p-3 border-b border-gray-800 flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-grow">
+          {/* Upload and Search - Prominently display upload first for mobile */}
+          <div className="p-3 border-b border-gray-800 flex flex-col gap-3">
+            {/* Prominent upload button for all devices */}
+            <div className="w-full">
+              <label className="cursor-pointer w-full">
+                <Button 
+                  className="w-full py-4 md:py-6 text-white bg-primary hover:bg-primary/90 flex items-center justify-center"
+                  size="lg"
+                >
+                  <div className="flex flex-col items-center">
+                    <Upload className="h-6 w-6 mb-1" />
+                    <span className="font-medium">Tap to Upload Media</span>
+                    <span className="text-xs mt-1 opacity-80">Videos & Images</span>
+                  </div>
+                </Button>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept="video/*,image/*"
+                  capture="environment"
+                  onChange={handleFileUpload}
+                />
+              </label>
+            </div>
+            
+            {/* Search field */}
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                className="flex-grow pl-9"
+                className="pl-9"
                 placeholder="Search media..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
-            <label className="cursor-pointer">
-              <Button>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload
-              </Button>
-              <input 
-                type="file" 
-                className="hidden" 
-                accept="video/*,image/*" 
-                onChange={handleFileUpload}
-              />
-            </label>
           </div>
           
           {/* Media grid */}
-          <div className="flex-grow overflow-y-auto p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="flex-grow overflow-y-auto p-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {filterMedia().map(media => (
                 <div 
                   key={media.id}
-                  className="relative group cursor-pointer border border-gray-800 rounded-md overflow-hidden"
+                  className="relative group cursor-pointer border border-gray-800 rounded-md overflow-hidden shadow-md hover:shadow-lg transition-shadow"
                   onClick={() => handleMediaSelect(media)}
                 >
                   <div className="aspect-video bg-gray-900 overflow-hidden">
@@ -176,9 +190,13 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onClose }) => {
                       alt={media.name}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <Button size="sm" variant="secondary" className="flex items-center">
-                        <Plus className="mr-1 h-3 w-3" /> Add to Project
+                    {/* Always visible overlay for mobile users */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end justify-center p-3">
+                      <Button 
+                        size="sm" 
+                        className="w-full bg-primary hover:bg-primary/90 text-white"
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Add to Project
                       </Button>
                     </div>
                   </div>
