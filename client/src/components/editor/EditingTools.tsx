@@ -2,6 +2,17 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useEditorContext } from '@/lib/editorContext';
 import Timeline from './Timeline';
+import { 
+  ZoomIn, 
+  ZoomOut, 
+  Play, 
+  Pause, 
+  Plus, 
+  FileText, 
+  Scissors, 
+  Volume2, 
+  Subtitles 
+} from 'lucide-react';
 
 const EditingTools: React.FC = () => {
   const { 
@@ -23,16 +34,29 @@ const EditingTools: React.FC = () => {
   };
   
   return (
-    <div className="h-auto min-h-32 bg-surface-dark border-t border-gray-800 p-4">
+    <div className="h-auto min-h-32 bg-surface-dark border-t border-gray-800 p-4 pb-0">
+      {/* Playback control - center aligned for prominence */}
+      <div className="flex justify-center mb-3">
+        <Button
+          onClick={togglePlayback}
+          size="icon"
+          variant="default"
+          className="w-12 h-12 rounded-full shadow-md bg-primary hover:bg-primary/90"
+        >
+          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+        </Button>
+      </div>
+      
       {/* Tools Tabs */}
       <div className="flex justify-between items-center mb-4">
-        <div className="flex space-x-2 overflow-x-auto scrollbar-thin">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-thin pb-1">
           <Button
             variant={activeToolTab === 'trim' ? 'secondary' : 'outline'}
             size="sm"
             onClick={() => setActiveToolTab('trim')}
             className={activeToolTab === 'trim' ? 'bg-primary/10 text-primary' : 'bg-gray-800'}
           >
+            <Scissors className="mr-1 h-3.5 w-3.5" />
             Trim & Cut
           </Button>
           <Button
@@ -41,6 +65,7 @@ const EditingTools: React.FC = () => {
             onClick={() => setActiveToolTab('captions')}
             className={activeToolTab === 'captions' ? 'bg-primary/10 text-primary' : 'bg-gray-800'}
           >
+            <Subtitles className="mr-1 h-3.5 w-3.5" />
             Captions
           </Button>
           <Button
@@ -49,6 +74,7 @@ const EditingTools: React.FC = () => {
             onClick={() => setActiveToolTab('audio')}
             className={activeToolTab === 'audio' ? 'bg-primary/10 text-primary' : 'bg-gray-800'}
           >
+            <Volume2 className="mr-1 h-3.5 w-3.5" />
             Audio
           </Button>
           <Button
@@ -57,33 +83,26 @@ const EditingTools: React.FC = () => {
             onClick={() => setActiveToolTab('filters')}
             className={activeToolTab === 'filters' ? 'bg-primary/10 text-primary' : 'bg-gray-800'}
           >
+            <i className="ri-contrast-2-line mr-1"></i>
             Filters
           </Button>
         </div>
-        <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleZoomIn}
-            className="w-8 h-8 bg-gray-800"
-          >
-            <i className="ri-zoom-in-line"></i>
-          </Button>
+        <div className="flex space-x-2">
           <Button
             variant="outline"
             size="icon"
             onClick={handleZoomOut}
-            className="w-8 h-8 bg-gray-800"
+            className="w-7 h-7 bg-gray-800"
           >
-            <i className="ri-zoom-out-line"></i>
+            <ZoomOut className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            onClick={togglePlayback}
-            className="w-8 h-8 bg-gray-800"
+            onClick={handleZoomIn}
+            className="w-7 h-7 bg-gray-800"
           >
-            <i className={isPlaying ? "ri-pause-line" : "ri-play-line"}></i>
+            <ZoomIn className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -97,11 +116,11 @@ const EditingTools: React.FC = () => {
             className="bg-gray-800"
             onClick={() => addClip('caption')}
           >
-            <i className="ri-add-line mr-1"></i>
+            <Plus className="mr-1 h-3.5 w-3.5" />
             Add Caption
           </Button>
           <Button variant="outline" size="sm" className="bg-gray-800">
-            <i className="ri-file-text-line mr-1"></i>
+            <FileText className="mr-1 h-3.5 w-3.5" />
             Import Subtitles
           </Button>
         </div>
@@ -115,11 +134,11 @@ const EditingTools: React.FC = () => {
             className="bg-gray-800"
             onClick={() => addClip('video')}
           >
-            <i className="ri-add-line mr-1"></i>
+            <Plus className="mr-1 h-3.5 w-3.5" />
             Add Video Clip
           </Button>
           <Button variant="outline" size="sm" className="bg-gray-800">
-            <i className="ri-scissors-cut-line mr-1"></i>
+            <Scissors className="mr-1 h-3.5 w-3.5" />
             Split Clip
           </Button>
         </div>
@@ -133,11 +152,11 @@ const EditingTools: React.FC = () => {
             className="bg-gray-800"
             onClick={() => addClip('audio')}
           >
-            <i className="ri-add-line mr-1"></i>
+            <Plus className="mr-1 h-3.5 w-3.5" />
             Add Audio Track
           </Button>
           <Button variant="outline" size="sm" className="bg-gray-800">
-            <i className="ri-volume-up-line mr-1"></i>
+            <Volume2 className="mr-1 h-3.5 w-3.5" />
             Adjust Volume
           </Button>
         </div>

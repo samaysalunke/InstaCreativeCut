@@ -107,7 +107,7 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onClose }) => {
                     onClick={() => setSelectedFolder(folder.id === selectedFolder ? null : folder.id)}
                   >
                     <div className="flex items-center">
-                      <i className="ri-folder-line mr-2 text-primary"></i>
+                      <Folder className="mr-2 h-4 w-4 text-primary" />
                       <span>{folder.name}</span>
                     </div>
                     <Badge variant="outline">{folder.count}</Badge>
@@ -178,14 +178,14 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onClose }) => {
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                       <Button size="sm" variant="secondary" className="flex items-center">
-                        <i className="ri-add-line mr-1"></i> Add to Project
+                        <Plus className="mr-1 h-3 w-3" /> Add to Project
                       </Button>
                     </div>
                   </div>
                   <div className="p-2">
                     <div className="font-medium truncate">{media.name}</div>
                     <div className="text-xs text-gray-400 mt-1 flex items-center">
-                      <i className="ri-film-line mr-1"></i> Video
+                      <Film className="mr-1 h-3 w-3" /> Video
                     </div>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onClose }) => {
             
             {filterMedia().length === 0 && (
               <div className="text-center py-12 text-gray-400">
-                <i className="ri-film-line text-3xl mb-2"></i>
+                <Film className="mx-auto h-12 w-12 mb-3 opacity-40" />
                 <p>No media found. Try adjusting your filters or upload a new file.</p>
               </div>
             )}
