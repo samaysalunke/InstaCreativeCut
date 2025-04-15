@@ -9,5 +9,40 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+    overflow-x: hidden;
+  }
+}
+
+/* Mobile-first utility classes */
+@layer components {
+  .timeline-track {
+    @apply h-7 md:h-8 relative bg-gray-800 rounded overflow-hidden;
+  }
+
+  .video-clip {
+    @apply absolute top-0 h-7 md:h-8 rounded overflow-hidden border border-transparent cursor-move select-none;
+  }
+
+  .caption-bubble {
+    @apply max-w-[90%] md:max-w-[80%] p-2 md:p-3 rounded text-center break-words;
+  }
+
+  /* Mobile touch target improvements */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px]; /* Apple's HIG recommended minimum */
+  }
+
+  /* Responsive typography */
+  .text-mobile-xs {
+    @apply text-[10px] md:text-xs;
+  }
+  
+  .text-mobile-sm {
+    @apply text-xs md:text-sm;
+  }
+  
+  .text-mobile-base {
+    @apply text-sm md:text-base;
   }
 }

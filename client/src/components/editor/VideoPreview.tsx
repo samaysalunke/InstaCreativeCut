@@ -55,22 +55,23 @@ const VideoPreview: React.FC = () => {
   };
   
   return (
-    <div className="flex-grow p-4 flex items-center justify-center overflow-hidden">
-      <div className="relative w-full max-w-2xl aspect-[9/16] bg-black rounded-lg shadow-lg overflow-hidden">
+    <div className="flex-grow p-2 md:p-4 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full max-w-full md:max-w-2xl aspect-[9/16] bg-black rounded-lg shadow-lg overflow-hidden">
         {videoSrc ? (
           <video
             ref={videoRef}
             className="absolute inset-0 w-full h-full object-contain"
             onTimeUpdate={handleTimeUpdate}
             onClick={handleVideoClick}
+            playsInline // Important for mobile
           >
             <source src={videoSrc} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-black flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center cursor-pointer" onClick={togglePlayback}>
-              <i className="ri-play-fill text-4xl"></i>
+            <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} rounded-full bg-white/10 flex items-center justify-center cursor-pointer`} onClick={togglePlayback}>
+              <i className={`ri-play-fill ${isMobile ? 'text-3xl' : 'text-4xl'}`}></i>
             </div>
           </div>
         )}
@@ -82,16 +83,18 @@ const VideoPreview: React.FC = () => {
               key={caption.id}
               className="caption-bubble absolute"
               style={{
-                bottom: '32px',
+                bottom: isMobile ? '24px' : '32px',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                fontSize: `${caption.properties?.fontSize || 18}px`,
+                fontSize: `${isMobile ? (caption.properties?.fontSize || 18) * 0.8 : caption.properties?.fontSize || 18}px`,
                 fontFamily: caption.properties?.font || 'Poppins',
                 color: caption.properties?.color || 'black',
                 backgroundColor: caption.properties?.backgroundColor || 'rgba(255, 255, 255, 0.8)',
+                padding: isMobile ? '6px 8px' : '8px 12px',
+                maxWidth: isMobile ? '90%' : '80%',
                 ...caption.properties?.position && {
-                  bottom: `${caption.properties.position.y}px`,
-                  left: `${caption.properties.position.x}px`,
+                  bottom: `${caption.properties.position.y * (isMobile ? 0.8 : 1)}px`,
+                  left: `${caption.properties.position.x * (isMobile ? 0.8 : 1)}px`,
                   transform: 'none'
                 }
               }}
@@ -102,13 +105,15 @@ const VideoPreview: React.FC = () => {
         ))}
         
         {/* Video Controls Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 md:p-4">
           <div className="flex items-center justify-between text-white">
-            <div className="text-sm">{formatTime(currentTime)} / {formatTime(duration)}</div>
-            <div className="flex space-x-4">
-              <button className="hover:text-primary transition-colors">
-                <i className="ri-fullscreen-line"></i>
-              </button>
+            <div className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{formatTime(currentTime)} / {formatTime(duration)}</div>
+            <div className="flex space-x-2 md:space-x-4">
+              {!isMobile && (
+                <button className="hover:text-primary transition-colors">
+                  <i className="ri-fullscreen-line"></i>
+                </button>
+              )}
               <button className="hover:text-primary transition-colors">
                 <i className="ri-volume-up-line"></i>
               </button>
@@ -118,7 +123,7 @@ const VideoPreview: React.FC = () => {
             value={[currentTime]}
             max={duration}
             step={1}
-            className="mt-2"
+            className="mt-1 md:mt-2"
             onValueChange={handleSliderChange}
           />
         </div>

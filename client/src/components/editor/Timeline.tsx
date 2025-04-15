@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useEditorContext } from '@/lib/editorContext';
 import { cn } from '@/lib/utils';
 import { TimelineClip } from '@shared/schema';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TimelineProps {
   zoomLevel: number;
@@ -13,6 +14,7 @@ interface TimeMarker {
 }
 
 const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
+  const isMobile = useIsMobile();
   const { 
     clips, 
     currentTime, 
@@ -134,7 +136,7 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
   return (
     <div className="timeline-container overflow-x-auto">
       <div 
-        className="timeline-scale relative h-6 mb-1" 
+        className="timeline-scale relative h-5 md:h-6 mb-1" 
         ref={timelineRef}
         onClick={handlePlayheadClick}
         style={{ 
@@ -147,21 +149,29 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
           style={{ left: `${currentTime * pixelsPerMs}px` }}
         />
         
-        {timeMarkers.map((marker, idx) => (
-          <div 
-            key={idx} 
-            className="timeline-marker" 
-            style={{ left: `${marker.position}px` }}
-          >
-            <div className="timeline-marker-text">{marker.label}</div>
-          </div>
-        ))}
+        {/* Only show time markers on larger screens or reduce frequency on mobile */}
+        {timeMarkers
+          .filter((_, idx) => !isMobile || idx % 2 === 0) // Show fewer markers on mobile
+          .map((marker, idx) => (
+            <div 
+              key={idx} 
+              className="timeline-marker" 
+              style={{ left: `${marker.position}px` }}
+            >
+              <div className={`timeline-marker-text ${isMobile ? 'text-[10px]' : 'text-xs'}`}>
+                {marker.label}
+              </div>
+            </div>
+          ))
+        }
       </div>
       
       {/* Video track */}
-      <div className="mb-3">
+      <div className="mb-2 md:mb-3">
         <div className="flex items-center">
-          <div className="w-20 text-xs font-medium text-gray-400 pr-2">Video</div>
+          <div className={`${isMobile ? 'w-12' : 'w-20'} text-xs font-medium text-gray-400 pr-2`}>
+            {isMobile ? 'Video' : 'Video Track'}
+          </div>
           <div 
             className="flex-grow timeline-track"
             style={{ width: `${duration * pixelsPerMs}px` }}
@@ -178,16 +188,32 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
                   style={{ 
                     left: `${clip.start * pixelsPerMs}px`, 
                     width: `${(clip.end - clip.start) * pixelsPerMs}px`,
-                    backgroundColor: clip.color || "#FF5A5F"
+                    backgroundColor: clip.color || "#FF5A5F",
+                    height: isMobile ? '28px' : '32px'
                   }}
                   onMouseDown={(e) => startClipDrag(clip, e)}
+                  onTouchStart={(e) => {
+                    // Basic touch support for mobile
+                    const touch = e.touches[0];
+                    if (touch) {
+                      const clipEl = e.currentTarget;
+                      const rect = clipEl.getBoundingClientRect();
+                      const touchOffsetX = touch.clientX - rect.left;
+                      
+                      setDraggingClip({
+                        id: clip.id,
+                        startOffset: touchOffsetX / pixelsPerMs
+                      });
+                      selectClip(clip.id);
+                    }
+                  }}
                 >
                   <div 
                     className="h-full w-2 cursor-ew-resize absolute left-0 top-0"
                     onMouseDown={(e) => startClipResize(clip.id, 'start', e)}
                   />
-                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none">
-                    {clip.name}
+                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none truncate">
+                    {isMobile && clip.name.length > 6 ? `${clip.name.substring(0, 6)}...` : clip.name}
                   </div>
                   <div 
                     className="h-full w-2 cursor-ew-resize absolute right-0 top-0"
@@ -200,9 +226,11 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
       </div>
       
       {/* Audio track */}
-      <div className="mb-3">
+      <div className="mb-2 md:mb-3">
         <div className="flex items-center">
-          <div className="w-20 text-xs font-medium text-gray-400 pr-2">Audio</div>
+          <div className={`${isMobile ? 'w-12' : 'w-20'} text-xs font-medium text-gray-400 pr-2`}>
+            {isMobile ? 'Audio' : 'Audio Track'}
+          </div>
           <div 
             className="flex-grow timeline-track"
             style={{ width: `${duration * pixelsPerMs}px` }}
@@ -219,16 +247,32 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
                   style={{ 
                     left: `${clip.start * pixelsPerMs}px`, 
                     width: `${(clip.end - clip.start) * pixelsPerMs}px`,
-                    backgroundColor: clip.color || "#00C4B4"
+                    backgroundColor: clip.color || "#00C4B4",
+                    height: isMobile ? '28px' : '32px'
                   }}
                   onMouseDown={(e) => startClipDrag(clip, e)}
+                  onTouchStart={(e) => {
+                    // Basic touch support for mobile
+                    const touch = e.touches[0];
+                    if (touch) {
+                      const clipEl = e.currentTarget;
+                      const rect = clipEl.getBoundingClientRect();
+                      const touchOffsetX = touch.clientX - rect.left;
+                      
+                      setDraggingClip({
+                        id: clip.id,
+                        startOffset: touchOffsetX / pixelsPerMs
+                      });
+                      selectClip(clip.id);
+                    }
+                  }}
                 >
                   <div 
                     className="h-full w-2 cursor-ew-resize absolute left-0 top-0"
                     onMouseDown={(e) => startClipResize(clip.id, 'start', e)}
                   />
-                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none">
-                    {clip.name}
+                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none truncate">
+                    {isMobile && clip.name.length > 6 ? `${clip.name.substring(0, 6)}...` : clip.name}
                   </div>
                   <div 
                     className="h-full w-2 cursor-ew-resize absolute right-0 top-0"
@@ -241,9 +285,11 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
       </div>
       
       {/* Captions track */}
-      <div className="mb-3">
+      <div className="mb-2 md:mb-3">
         <div className="flex items-center">
-          <div className="w-20 text-xs font-medium text-gray-400 pr-2">Captions</div>
+          <div className={`${isMobile ? 'w-12' : 'w-20'} text-xs font-medium text-gray-400 pr-2`}>
+            {isMobile ? 'Captions' : 'Captions'}
+          </div>
           <div 
             className="flex-grow timeline-track"
             style={{ width: `${duration * pixelsPerMs}px` }}
@@ -260,17 +306,35 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
                   style={{ 
                     left: `${clip.start * pixelsPerMs}px`, 
                     width: `${(clip.end - clip.start) * pixelsPerMs}px`,
-                    backgroundColor: clip.color || "#FFD166"
+                    backgroundColor: clip.color || "#FFD166",
+                    height: isMobile ? '28px' : '32px'
                   }}
                   onMouseDown={(e) => startClipDrag(clip, e)}
+                  onTouchStart={(e) => {
+                    // Basic touch support for mobile
+                    const touch = e.touches[0];
+                    if (touch) {
+                      const clipEl = e.currentTarget;
+                      const rect = clipEl.getBoundingClientRect();
+                      const touchOffsetX = touch.clientX - rect.left;
+                      
+                      setDraggingClip({
+                        id: clip.id,
+                        startOffset: touchOffsetX / pixelsPerMs
+                      });
+                      selectClip(clip.id);
+                    }
+                  }}
                 >
                   <div 
                     className="h-full w-2 cursor-ew-resize absolute left-0 top-0"
                     onMouseDown={(e) => startClipResize(clip.id, 'start', e)}
                   />
-                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none">
-                    {clip.properties?.text?.substring(0, 10) || 'Caption'}
-                    {(clip.properties?.text?.length || 0) > 10 ? '...' : ''}
+                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none truncate">
+                    {isMobile 
+                      ? (clip.properties?.text?.substring(0, 6) || 'Caption') + (clip.properties?.text && clip.properties.text.length > 6 ? '...' : '')
+                      : (clip.properties?.text?.substring(0, 10) || 'Caption') + (clip.properties?.text && clip.properties.text.length > 10 ? '...' : '')
+                    }
                   </div>
                   <div 
                     className="h-full w-2 cursor-ew-resize absolute right-0 top-0"
