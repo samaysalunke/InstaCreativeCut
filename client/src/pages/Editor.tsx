@@ -19,6 +19,8 @@ const Editor: React.FC = () => {
     activeToolTab, 
     videoSrc, 
     clips,
+    isPlaying,
+    togglePlayback,
     setActiveToolTab 
   } = useEditorContext();
   
@@ -55,11 +57,12 @@ const Editor: React.FC = () => {
   };
   
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <Header />
+    <div className="flex h-screen flex-col overflow-hidden bg-black">
+      {/* Only show header on non-mobile */}
+      {!isMobile && <Header />}
       
       <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-        {/* Sidebar always visible on desktop, hidden on mobile */}
+        {/* Sidebar visible only on desktop */}
         {!isMobile && <Sidebar />}
         
         {showLibrary ? (
@@ -70,61 +73,103 @@ const Editor: React.FC = () => {
             {!hasContent ? (
               <EmptyState onAddMedia={() => setShowLibrary(true)} />
             ) : (
-              <>
-                {/* Video Preview - Always at top, no controls here */}
-                <div className="order-1 flex-grow flex items-center justify-center bg-black/30">
-                  <VideoPreview hideControls={true} />
-                </div>
+              <div className="flex flex-col h-full">
+                {/* Mobile Header - minimal design */}
+                {isMobile && (
+                  <div className="bg-black text-white py-3 px-4 flex justify-between items-center">
+                    <div className="flex-grow flex justify-center relative">
+                      <h1 className="text-lg font-medium">VideoReel</h1>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white absolute right-2 top-2.5"
+                      onClick={() => window.history.back()}
+                    >
+                      <i className="ri-close-line text-xl"></i>
+                    </Button>
+                  </div>
+                )}
                 
-                {/* Bottom controls and editing panel - fixed height for consistency */}
-                <div className="order-2 bg-surface-dark border-t border-gray-800 h-auto md:h-[40%] overflow-hidden flex flex-col">
-                  {/* Mobile sidebar toggle and controls */}
+                {/* Video Preview - Full width with correct aspect ratio */}
+                <div className="flex-grow flex items-center justify-center bg-black relative overflow-hidden">
+                  <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
+                    <VideoPreview hideControls={true} />
+                  </div>
+                  
+                  {/* Simple playback control floating over video */}
                   {isMobile && (
-                    <div className="flex justify-between items-center p-2 border-b border-gray-700">
+                    <div 
+                      className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full 
+                                 bg-black/30 backdrop-blur-sm flex items-center justify-center z-10 hover:bg-black/40"
+                      onClick={togglePlayback}
+                    >
+                      <i className={`${isPlaying ? 'ri-pause-fill' : 'ri-play-fill'} text-white text-2xl`}></i>
+                    </div>
+                  )}
+                  
+                  {/* Floating action buttons for mobile - similar to CapCut/InShot */}
+                  {isMobile && (
+                    <div className="absolute bottom-4 right-4 flex flex-col space-y-3 z-20">
                       <Button 
-                        size="sm" 
-                        variant="ghost"
-                        className="text-gray-400"
-                        onClick={() => setActiveToolTab(activeToolTab === 'sidebar' ? 'trim' : 'sidebar')}
-                      >
-                        {activeToolTab === 'sidebar' ? 
-                          <span className="flex items-center"><i className="ri-arrow-left-line mr-1"></i> Back</span> : 
-                          <span className="flex items-center"><i className="ri-menu-line mr-1"></i> Menu</span>
-                        }
-                      </Button>
-                      
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        className="flex items-center"
+                        className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg" 
+                        size="icon"
                         onClick={toggleLibrary}
                       >
-                        <i className="ri-folder-video-line mr-1"></i>
-                        Media
+                        <i className="ri-gallery-line text-xl"></i>
+                      </Button>
+                      <Button 
+                        className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 shadow-lg" 
+                        size="icon"
+                        onClick={() => {/* Export video */}}
+                      >
+                        <i className="ri-download-2-line text-white text-xl"></i>
                       </Button>
                     </div>
                   )}
-                  
-                  {/* Conditional rendering of mobile sidebar or editing tools */}
-                  {isMobile && activeToolTab === 'sidebar' ? (
-                    <div className="p-2 overflow-y-auto h-64">
-                      <Sidebar inline={true} />
-                    </div>
-                  ) : (
-                    <EditingTools />
-                  )}
-                  
-                  {/* Properties panel - side panel on desktop, part of bottom section on mobile */}
-                  {(showProperties || !isMobile) && (
-                    <PropertiesPanel 
-                      className={isMobile 
-                        ? "border-t border-gray-700 h-auto" 
-                        : "hidden md:block md:w-80 border-l border-gray-800"
-                      } 
-                    />
-                  )}
                 </div>
-              </>
+                
+                {/* Bottom TabBar UI for mobile - inspired by mobile editing apps */}
+                {isMobile && (
+                  <div className="h-auto bg-gray-900">
+                    {/* Tool Tabs - Horizontal scrolling */}
+                    <div className="flex overflow-x-auto py-2 px-1 gap-1 border-t border-gray-800 no-scrollbar">
+                      {['trim', 'captions', 'audio', 'filters', 'effects', 'text', 'stickers'].map(tool => (
+                        <Button 
+                          key={tool}
+                          variant={activeToolTab === tool ? "default" : "ghost"}
+                          className={`px-4 rounded-full flex-shrink-0 ${activeToolTab === tool ? 'bg-primary text-white' : 'text-gray-300'}`}
+                          onClick={() => setActiveToolTab(tool)}
+                        >
+                          <span className="capitalize">{tool}</span>
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    {/* Timeline or tool-specific UI */}
+                    <div className="py-1 px-2">
+                      <EditingTools />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Desktop editing panel with timeline */}
+                {!isMobile && (
+                  <div className="h-[40%] bg-surface-dark border-t border-gray-800 overflow-hidden flex flex-col">
+                    <EditingTools />
+                  </div>
+                )}
+                
+                {/* Properties panel - side panel on desktop, bottom panel on mobile */}
+                {(showProperties || !isMobile) && (
+                  <PropertiesPanel 
+                    className={isMobile 
+                      ? "absolute bottom-0 left-0 right-0 z-30 bg-gray-900 h-auto max-h-[60vh] rounded-t-xl shadow-lg" 
+                      : "hidden md:block md:w-80 border-l border-gray-800"
+                    } 
+                  />
+                )}
+              </div>
             )}
           </div>
         )}

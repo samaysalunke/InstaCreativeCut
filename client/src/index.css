@@ -47,6 +47,23 @@
     @apply h-full w-1.5 absolute top-0 bg-transparent hover:bg-white/10 z-20;
     transition: background-color 0.15s ease;
   }
+  
+  /* Hide scrollbars but keep functionality */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+  
+  /* Mobile-optimized buttons */
+  .mobile-fab {
+    @apply flex items-center justify-center w-12 h-12 rounded-full shadow-lg;
+    @apply text-white bg-primary hover:bg-primary/90 transition-all;
+  }
+}
 
   /* Mobile touch target improvements */
   .mobile-touch-target {
