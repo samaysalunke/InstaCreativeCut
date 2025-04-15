@@ -7,8 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const PropertiesPanel: React.FC = () => {
+interface PropertiesPanelProps {
+  className?: string;
+}
+
+const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ className }) => {
+  const isMobile = useIsMobile();
   const { 
     selectedClipId, 
     clips, 
@@ -23,7 +30,11 @@ const PropertiesPanel: React.FC = () => {
   
   if (!selectedClip) {
     return (
-      <div className="w-80 bg-surface-dark border-l border-gray-800 overflow-y-auto hidden lg:block">
+      <div className={cn(
+        "bg-surface-dark border-l border-gray-800 overflow-y-auto",
+        isMobile ? "w-full" : "w-80 hidden lg:block",
+        className
+      )}>
         <div className="p-4 border-b border-gray-800">
           <h3 className="text-lg font-medium">Properties</h3>
         </div>
@@ -543,7 +554,11 @@ const PropertiesPanel: React.FC = () => {
   };
   
   return (
-    <div className="w-80 bg-surface-dark border-l border-gray-800 overflow-y-auto hidden lg:block">
+    <div className={cn(
+      "bg-surface-dark border-l border-gray-800 overflow-y-auto",
+      isMobile ? "w-full h-full" : "w-80 hidden lg:block",
+      className
+    )}>
       <div className="p-4 border-b border-gray-800">
         <h3 className="text-lg font-medium">Properties</h3>
       </div>

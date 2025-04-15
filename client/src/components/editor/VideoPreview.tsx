@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { useEditorContext } from '@/lib/editorContext';
 import { Slider } from '@/components/ui/slider';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const VideoPreview: React.FC = () => {
+  const isMobile = useIsMobile();
   const { 
     currentTime, 
     duration, 
