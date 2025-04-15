@@ -23,7 +23,7 @@ interface EditorContextType {
   togglePlayback: () => void;
   updateClipTiming: (id: string, start: number, end: number) => void;
   updateClipProperties: (id: string, properties: any) => void;
-  addClip: (type: 'video' | 'audio' | 'caption') => void;
+  addClip: (type: 'video' | 'audio' | 'caption', options?: { src?: string, name?: string }) => void;
   removeClip: (id: string) => void;
   saveProject: () => Promise<void>;
   exportVideo: () => Promise<void>;
@@ -186,15 +186,16 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
   
   // Add a new clip
-  const addClip = useCallback((type: 'video' | 'audio' | 'caption') => {
+  const addClip = useCallback((type: 'video' | 'audio' | 'caption', options?: { src?: string, name?: string }) => {
     const newClip: TimelineClip = {
       id: uuidv4(),
       type,
-      name: type === 'video' ? 'New Video' : type === 'audio' ? 'New Audio' : 'New Caption',
+      name: options?.name || (type === 'video' ? 'New Video' : type === 'audio' ? 'New Audio' : 'New Caption'),
       start: currentTime,
       end: currentTime + 3000, // 3 seconds default duration
       track: type === 'video' ? 0 : type === 'audio' ? 1 : 2,
-      color: type === 'video' ? '#FF5A5F' : type === 'audio' ? '#00C4B4' : '#FFD166'
+      color: type === 'video' ? '#FF5A5F' : type === 'audio' ? '#00C4B4' : '#FFD166',
+      src: options?.src
     };
     
     if (type === 'caption') {
@@ -209,6 +210,12 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     
     setClips(prevClips => [...prevClips, newClip]);
+    
+    // If it's a video and has a source, set it as the current videoSrc
+    if (type === 'video' && options?.src) {
+      setVideoSrc(options.src);
+    }
+    
     selectClip(newClip.id);
     
     toast({
