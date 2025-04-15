@@ -17,15 +17,35 @@
 /* Mobile-first utility classes */
 @layer components {
   .timeline-track {
-    @apply h-7 md:h-8 relative bg-gray-800 rounded overflow-hidden;
+    @apply relative overflow-hidden;
   }
 
-  .video-clip {
-    @apply absolute top-0 h-7 md:h-8 rounded overflow-hidden border border-transparent cursor-move select-none;
+  .timeline-scale {
+    @apply relative overflow-x-auto bg-gray-900/80 border-gray-700 shadow-md;
+  }
+
+  .playhead-indicator {
+    @apply z-30 rounded-full;
+    filter: drop-shadow(0 0 2px theme('colors.primary'));
+  }
+
+  .video-clip, .audio-clip, .caption-clip {
+    @apply absolute cursor-move select-none shadow-md;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .video-clip:hover, .audio-clip:hover, .caption-clip:hover {
+    @apply shadow-lg;
+    transform: translateY(-1px);
   }
 
   .caption-bubble {
     @apply max-w-[90%] md:max-w-[80%] p-2 md:p-3 rounded text-center break-words;
+  }
+  
+  .resize-handle {
+    @apply h-full w-1.5 absolute top-0 bg-transparent hover:bg-white/10 z-20;
+    transition: background-color 0.15s ease;
   }
 
   /* Mobile touch target improvements */

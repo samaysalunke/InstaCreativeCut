@@ -134,31 +134,46 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
   };
   
   return (
-    <div className="timeline-container overflow-x-auto">
+    <div className="timeline-container overflow-x-auto pb-2">
       <div 
-        className="timeline-scale relative h-5 md:h-6 mb-1" 
+        className="timeline-scale relative h-8 bg-gray-900 rounded-t-md border-t border-x border-gray-700 mb-2" 
         ref={timelineRef}
         onClick={handlePlayheadClick}
         style={{ 
-          backgroundSize: `${40 * zoomLevel}px 100%`,
-          width: `${duration * pixelsPerMs}px`
+          width: `${duration * pixelsPerMs}px`,
+          minWidth: '100%'
         }}
       >
-        <div 
-          className="playhead absolute top-0 h-full w-0.5 bg-primary z-10" 
-          style={{ left: `${currentTime * pixelsPerMs}px` }}
-        />
+        {/* Grid lines */}
+        {timeMarkers.map((marker, idx) => (
+          <div 
+            key={`grid-${idx}`} 
+            className="absolute h-full w-px bg-gray-700 opacity-30" 
+            style={{ left: `${marker.position}px` }}
+          />
+        ))}
         
-        {/* Only show time markers on larger screens or reduce frequency on mobile */}
+        {/* Playhead indicator */}
+        <div 
+          className="absolute top-0 h-full w-0.5 bg-primary z-20"
+          style={{ 
+            left: `${currentTime * pixelsPerMs}px`,
+            boxShadow: '0 0 5px rgba(255,90,95,0.5)'
+          }}
+        >
+          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-primary rounded-full shadow-md" />
+        </div>
+        
+        {/* Time markers */}
         {timeMarkers
           .filter((_, idx) => !isMobile || idx % 2 === 0) // Show fewer markers on mobile
           .map((marker, idx) => (
             <div 
               key={idx} 
-              className="timeline-marker" 
+              className="absolute" 
               style={{ left: `${marker.position}px` }}
             >
-              <div className={`timeline-marker-text ${isMobile ? 'text-[10px]' : 'text-xs'}`}>
+              <div className={`absolute bottom-1 -translate-x-1/2 ${isMobile ? 'text-[9px]' : 'text-xs'} text-gray-400 font-medium`}>
                 {marker.label}
               </div>
             </div>
@@ -173,23 +188,36 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
             {isMobile ? 'Video' : 'Video Track'}
           </div>
           <div 
-            className="flex-grow timeline-track"
-            style={{ width: `${duration * pixelsPerMs}px` }}
+            className="flex-grow timeline-track relative bg-gray-800 rounded-md border border-gray-700"
+            style={{ width: `${duration * pixelsPerMs}px`, minWidth: '100%', height: isMobile ? '32px' : '36px' }}
           >
+            {/* Grid lines overlay */}
+            {timeMarkers.map((marker, idx) => (
+              <div 
+                key={`grid-video-${idx}`} 
+                className="absolute h-full w-px bg-gray-700 opacity-20" 
+                style={{ left: `${marker.position}px` }}
+              />
+            ))}
+            
             {clips
               .filter(clip => clip.type === 'video')
               .map(clip => (
                 <div 
                   key={clip.id}
                   className={cn(
-                    "video-clip", 
-                    selectedClipId === clip.id && "ring-2 ring-primary"
+                    "absolute rounded-md shadow-md", 
+                    selectedClipId === clip.id 
+                      ? "ring-2 ring-primary z-10" 
+                      : "ring-1 ring-gray-600"
                   )}
                   style={{ 
                     left: `${clip.start * pixelsPerMs}px`, 
                     width: `${(clip.end - clip.start) * pixelsPerMs}px`,
                     backgroundColor: clip.color || "#FF5A5F",
-                    height: isMobile ? '28px' : '32px'
+                    height: isMobile ? '26px' : '30px',
+                    top: '3px',
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.07), rgba(0,0,0,0.1))'
                   }}
                   onMouseDown={(e) => startClipDrag(clip, e)}
                   onTouchStart={(e) => {
@@ -209,14 +237,14 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
                   }}
                 >
                   <div 
-                    className="h-full w-2 cursor-ew-resize absolute left-0 top-0"
+                    className="h-full w-2 cursor-ew-resize absolute left-0 top-0 hover:bg-gray-100/20 rounded-l-md"
                     onMouseDown={(e) => startClipResize(clip.id, 'start', e)}
                   />
-                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none truncate">
+                  <div className="h-full flex items-center justify-center text-xs font-medium px-3 pointer-events-none truncate text-white">
                     {isMobile && clip.name.length > 6 ? `${clip.name.substring(0, 6)}...` : clip.name}
                   </div>
                   <div 
-                    className="h-full w-2 cursor-ew-resize absolute right-0 top-0"
+                    className="h-full w-2 cursor-ew-resize absolute right-0 top-0 hover:bg-gray-100/20 rounded-r-md"
                     onMouseDown={(e) => startClipResize(clip.id, 'end', e)}
                   />
                 </div>
@@ -232,23 +260,36 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
             {isMobile ? 'Audio' : 'Audio Track'}
           </div>
           <div 
-            className="flex-grow timeline-track"
-            style={{ width: `${duration * pixelsPerMs}px` }}
+            className="flex-grow timeline-track relative bg-gray-800 rounded-md border border-gray-700"
+            style={{ width: `${duration * pixelsPerMs}px`, minWidth: '100%', height: isMobile ? '32px' : '36px' }}
           >
+            {/* Grid lines overlay */}
+            {timeMarkers.map((marker, idx) => (
+              <div 
+                key={`grid-audio-${idx}`} 
+                className="absolute h-full w-px bg-gray-700 opacity-20" 
+                style={{ left: `${marker.position}px` }}
+              />
+            ))}
+            
             {clips
               .filter(clip => clip.type === 'audio')
               .map(clip => (
                 <div 
                   key={clip.id}
                   className={cn(
-                    "video-clip", 
-                    selectedClipId === clip.id && "ring-2 ring-primary"
+                    "absolute rounded-md shadow-md", 
+                    selectedClipId === clip.id 
+                      ? "ring-2 ring-primary z-10" 
+                      : "ring-1 ring-gray-600"
                   )}
                   style={{ 
                     left: `${clip.start * pixelsPerMs}px`, 
                     width: `${(clip.end - clip.start) * pixelsPerMs}px`,
                     backgroundColor: clip.color || "#00C4B4",
-                    height: isMobile ? '28px' : '32px'
+                    height: isMobile ? '26px' : '30px',
+                    top: '3px',
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.07), rgba(0,0,0,0.1))'
                   }}
                   onMouseDown={(e) => startClipDrag(clip, e)}
                   onTouchStart={(e) => {
@@ -268,14 +309,14 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
                   }}
                 >
                   <div 
-                    className="h-full w-2 cursor-ew-resize absolute left-0 top-0"
+                    className="h-full w-2 cursor-ew-resize absolute left-0 top-0 hover:bg-gray-100/20 rounded-l-md"
                     onMouseDown={(e) => startClipResize(clip.id, 'start', e)}
                   />
-                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none truncate">
+                  <div className="h-full flex items-center justify-center text-xs font-medium px-3 pointer-events-none truncate text-white">
                     {isMobile && clip.name.length > 6 ? `${clip.name.substring(0, 6)}...` : clip.name}
                   </div>
                   <div 
-                    className="h-full w-2 cursor-ew-resize absolute right-0 top-0"
+                    className="h-full w-2 cursor-ew-resize absolute right-0 top-0 hover:bg-gray-100/20 rounded-r-md"
                     onMouseDown={(e) => startClipResize(clip.id, 'end', e)}
                   />
                 </div>
@@ -291,23 +332,36 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
             {isMobile ? 'Captions' : 'Captions'}
           </div>
           <div 
-            className="flex-grow timeline-track"
-            style={{ width: `${duration * pixelsPerMs}px` }}
+            className="flex-grow timeline-track relative bg-gray-800 rounded-md border border-gray-700"
+            style={{ width: `${duration * pixelsPerMs}px`, minWidth: '100%', height: isMobile ? '32px' : '36px' }}
           >
+            {/* Grid lines overlay */}
+            {timeMarkers.map((marker, idx) => (
+              <div 
+                key={`grid-caption-${idx}`} 
+                className="absolute h-full w-px bg-gray-700 opacity-20" 
+                style={{ left: `${marker.position}px` }}
+              />
+            ))}
+            
             {clips
               .filter(clip => clip.type === 'caption')
               .map(clip => (
                 <div 
                   key={clip.id}
                   className={cn(
-                    "video-clip", 
-                    selectedClipId === clip.id && "ring-2 ring-primary"
+                    "absolute rounded-md shadow-md", 
+                    selectedClipId === clip.id 
+                      ? "ring-2 ring-primary z-10" 
+                      : "ring-1 ring-gray-600"
                   )}
                   style={{ 
                     left: `${clip.start * pixelsPerMs}px`, 
                     width: `${(clip.end - clip.start) * pixelsPerMs}px`,
                     backgroundColor: clip.color || "#FFD166",
-                    height: isMobile ? '28px' : '32px'
+                    height: isMobile ? '26px' : '30px',
+                    top: '3px',
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.07), rgba(0,0,0,0.1))'
                   }}
                   onMouseDown={(e) => startClipDrag(clip, e)}
                   onTouchStart={(e) => {
@@ -327,17 +381,17 @@ const Timeline: React.FC<TimelineProps> = ({ zoomLevel }) => {
                   }}
                 >
                   <div 
-                    className="h-full w-2 cursor-ew-resize absolute left-0 top-0"
+                    className="h-full w-2 cursor-ew-resize absolute left-0 top-0 hover:bg-gray-100/20 rounded-l-md"
                     onMouseDown={(e) => startClipResize(clip.id, 'start', e)}
                   />
-                  <div className="h-full flex items-center justify-center text-xs px-3 pointer-events-none truncate">
+                  <div className="h-full flex items-center justify-center text-xs font-medium px-3 pointer-events-none truncate text-white">
                     {isMobile 
                       ? (clip.properties?.text?.substring(0, 6) || 'Caption') + (clip.properties?.text && clip.properties.text.length > 6 ? '...' : '')
                       : (clip.properties?.text?.substring(0, 10) || 'Caption') + (clip.properties?.text && clip.properties.text.length > 10 ? '...' : '')
                     }
                   </div>
                   <div 
-                    className="h-full w-2 cursor-ew-resize absolute right-0 top-0"
+                    className="h-full w-2 cursor-ew-resize absolute right-0 top-0 hover:bg-gray-100/20 rounded-r-md"
                     onMouseDown={(e) => startClipResize(clip.id, 'end', e)}
                   />
                 </div>
