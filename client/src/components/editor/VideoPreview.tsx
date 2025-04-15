@@ -2,8 +2,13 @@ import React, { useRef, useEffect } from 'react';
 import { useEditorContext } from '@/lib/editorContext';
 import { Slider } from '@/components/ui/slider';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Play, Pause, Volume2, Maximize2 } from 'lucide-react';
 
-const VideoPreview: React.FC = () => {
+interface VideoPreviewProps {
+  hideControls?: boolean;
+}
+
+const VideoPreview: React.FC<VideoPreviewProps> = ({ hideControls = false }) => {
   const isMobile = useIsMobile();
   const { 
     currentTime, 
@@ -55,8 +60,8 @@ const VideoPreview: React.FC = () => {
   };
   
   return (
-    <div className="flex-grow p-2 md:p-4 flex items-center justify-center overflow-hidden">
-      <div className="relative w-full max-w-full md:max-w-2xl aspect-[9/16] bg-black rounded-lg shadow-lg overflow-hidden">
+    <div className="flex-grow p-2 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full max-w-full md:max-w-2xl mx-auto aspect-[9/16] bg-black rounded-lg shadow-lg overflow-hidden">
         {videoSrc ? (
           <video
             ref={videoRef}
@@ -64,14 +69,32 @@ const VideoPreview: React.FC = () => {
             onTimeUpdate={handleTimeUpdate}
             onClick={handleVideoClick}
             playsInline // Important for mobile
+            controls={false}
           >
             <source src={videoSrc} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-black flex items-center justify-center">
-            <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} rounded-full bg-white/10 flex items-center justify-center cursor-pointer`} onClick={togglePlayback}>
-              <i className={`ri-play-fill ${isMobile ? 'text-3xl' : 'text-4xl'}`}></i>
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-800 to-black flex items-center justify-center">
+            <div 
+              className="w-16 h-16 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center cursor-pointer shadow-xl" 
+              onClick={togglePlayback}
+            >
+              <Play className="h-6 w-6 text-white ml-0.5" />
+            </div>
+          </div>
+        )}
+        
+        {/* Center play/pause button overlay (always visible) */}
+        {videoSrc && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+            <div 
+              className="w-16 h-16 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+              onClick={togglePlayback}
+            >
+              {isPlaying ? 
+                <Pause className="h-6 w-6 text-white" /> : 
+                <Play className="h-6 w-6 text-white ml-0.5" />}
             </div>
           </div>
         )}
@@ -83,15 +106,17 @@ const VideoPreview: React.FC = () => {
               key={caption.id}
               className="caption-bubble absolute"
               style={{
-                bottom: isMobile ? '24px' : '32px',
+                bottom: hideControls ? '16px' : (isMobile ? '80px' : '96px'),
                 left: '50%',
                 transform: 'translateX(-50%)',
                 fontSize: `${isMobile ? (caption.properties?.fontSize || 18) * 0.8 : caption.properties?.fontSize || 18}px`,
                 fontFamily: caption.properties?.font || 'Poppins',
-                color: caption.properties?.color || 'black',
-                backgroundColor: caption.properties?.backgroundColor || 'rgba(255, 255, 255, 0.8)',
-                padding: isMobile ? '6px 8px' : '8px 12px',
+                color: caption.properties?.color || 'white',
+                backgroundColor: caption.properties?.backgroundColor || 'rgba(0, 0, 0, 0.7)',
+                padding: isMobile ? '6px 12px' : '8px 16px',
+                borderRadius: '24px',
                 maxWidth: isMobile ? '90%' : '80%',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
                 ...caption.properties?.position && {
                   bottom: `${caption.properties.position.y * (isMobile ? 0.8 : 1)}px`,
                   left: `${caption.properties.position.x * (isMobile ? 0.8 : 1)}px`,
@@ -104,29 +129,31 @@ const VideoPreview: React.FC = () => {
           )
         ))}
         
-        {/* Video Controls Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 md:p-4">
-          <div className="flex items-center justify-between text-white">
-            <div className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{formatTime(currentTime)} / {formatTime(duration)}</div>
-            <div className="flex space-x-2 md:space-x-4">
-              {!isMobile && (
+        {/* Video Controls Overlay - only show if not hideControls */}
+        {!hideControls && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-4">
+            <div className="flex items-center justify-between text-white mb-2">
+              <div className="text-xs font-medium">{formatTime(currentTime)} / {formatTime(duration)}</div>
+              <div className="flex space-x-3">
+                {!isMobile && (
+                  <button className="hover:text-primary transition-colors">
+                    <Maximize2 className="h-4 w-4" />
+                  </button>
+                )}
                 <button className="hover:text-primary transition-colors">
-                  <i className="ri-fullscreen-line"></i>
+                  <Volume2 className="h-4 w-4" />
                 </button>
-              )}
-              <button className="hover:text-primary transition-colors">
-                <i className="ri-volume-up-line"></i>
-              </button>
+              </div>
             </div>
+            <Slider
+              value={[currentTime]}
+              max={duration}
+              step={1}
+              className="mt-1"
+              onValueChange={handleSliderChange}
+            />
           </div>
-          <Slider
-            value={[currentTime]}
-            max={duration}
-            step={1}
-            className="mt-1 md:mt-2"
-            onValueChange={handleSliderChange}
-          />
-        </div>
+        )}
       </div>
     </div>
   );

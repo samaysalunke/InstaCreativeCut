@@ -59,8 +59,8 @@ const Editor: React.FC = () => {
       <Header />
       
       <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-        {/* Sidebar always visible on desktop, only when not in library on mobile */}
-        {(!isMobile || !showLibrary) && <Sidebar />}
+        {/* Sidebar always visible on desktop, hidden on mobile */}
+        {!isMobile && <Sidebar />}
         
         {showLibrary ? (
           <MediaLibrary onClose={toggleLibrary} />
@@ -71,35 +71,59 @@ const Editor: React.FC = () => {
               <EmptyState onAddMedia={() => setShowLibrary(true)} />
             ) : (
               <>
-                {/* Video Preview - Always at top on mobile */}
-                <div className="order-1 flex-grow md:flex-grow-0 md:h-[60%]">
-                  <VideoPreview />
+                {/* Video Preview - Always at top, no controls here */}
+                <div className="order-1 flex-grow flex items-center justify-center bg-black/30">
+                  <VideoPreview hideControls={true} />
                 </div>
                 
-                {/* Bottom editing panel with timeline */}
-                <div className="order-2 bg-surface-dark border-t border-gray-800 md:h-[40%] overflow-hidden flex flex-col">
-                  <EditingTools />
-                  
-                  {/* Floating library button on mobile */}
+                {/* Bottom controls and editing panel - fixed height for consistency */}
+                <div className="order-2 bg-surface-dark border-t border-gray-800 h-auto md:h-[40%] overflow-hidden flex flex-col">
+                  {/* Mobile sidebar toggle and controls */}
                   {isMobile && (
-                    <Button 
-                      className="absolute bottom-20 right-4 rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary/90 text-white"
-                      onClick={toggleLibrary}
-                    >
-                      <i className="ri-folder-video-line text-xl"></i>
-                    </Button>
+                    <div className="flex justify-between items-center p-2 border-b border-gray-700">
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        className="text-gray-400"
+                        onClick={() => setActiveToolTab(activeToolTab === 'sidebar' ? 'trim' : 'sidebar')}
+                      >
+                        {activeToolTab === 'sidebar' ? 
+                          <span className="flex items-center"><i className="ri-arrow-left-line mr-1"></i> Back</span> : 
+                          <span className="flex items-center"><i className="ri-menu-line mr-1"></i> Menu</span>
+                        }
+                      </Button>
+                      
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        className="flex items-center"
+                        onClick={toggleLibrary}
+                      >
+                        <i className="ri-folder-video-line mr-1"></i>
+                        Media
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Conditional rendering of mobile sidebar or editing tools */}
+                  {isMobile && activeToolTab === 'sidebar' ? (
+                    <div className="p-2 overflow-y-auto h-64">
+                      <Sidebar inline={true} />
+                    </div>
+                  ) : (
+                    <EditingTools />
+                  )}
+                  
+                  {/* Properties panel - side panel on desktop, part of bottom section on mobile */}
+                  {(showProperties || !isMobile) && (
+                    <PropertiesPanel 
+                      className={isMobile 
+                        ? "border-t border-gray-700 h-auto" 
+                        : "hidden md:block md:w-80 border-l border-gray-800"
+                      } 
+                    />
                   )}
                 </div>
-                
-                {/* Properties panel - side panel on desktop, modal on mobile */}
-                {(showProperties || !isMobile) && (
-                  <PropertiesPanel 
-                    className={isMobile 
-                      ? "absolute inset-0 z-20 h-full" 
-                      : "hidden md:block md:w-80 border-l border-gray-800"
-                    } 
-                  />
-                )}
               </>
             )}
           </div>

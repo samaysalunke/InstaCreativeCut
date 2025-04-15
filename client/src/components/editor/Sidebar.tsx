@@ -26,7 +26,11 @@ const SidebarButton: React.FC<SidebarButtonProps> = ({ icon, label, active = fal
   );
 };
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  inline?: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ inline = false }) => {
   const { activeToolTab, setActiveToolTab, showTemplates } = useEditorContext();
   
   const tools = [
@@ -41,6 +45,49 @@ const Sidebar: React.FC = () => {
     { id: 'templates', icon: 'ri-magic-line', label: 'Templates' },
   ];
 
+  // If inline mode (for mobile), we render a different layout
+  if (inline) {
+    return (
+      <div className="w-full bg-transparent">
+        <div className="grid grid-cols-3 gap-2">
+          {tools.map((tool) => (
+            <Button
+              key={tool.id}
+              variant="outline"
+              size="sm"
+              className={cn(
+                "flex flex-col items-center justify-center py-3 h-20",
+                activeToolTab === tool.id 
+                  ? "bg-primary/10 text-primary border-primary/30" 
+                  : "bg-gray-800/60 hover:bg-gray-700/60"
+              )}
+              onClick={() => {
+                if (tool.id === 'templates') {
+                  showTemplates();
+                } else {
+                  setActiveToolTab(tool.id);
+                }
+              }}
+            >
+              <i className={`${tool.icon} text-xl mb-1`}></i>
+              <span className="text-xs">{tool.label}</span>
+            </Button>
+          ))}
+        </div>
+        <div className="mt-3">
+          <Button
+            className="w-full bg-primary hover:bg-primary/90"
+            onClick={() => setActiveToolTab('export')}
+          >
+            <i className="ri-upload-2-line mr-2"></i>
+            <span>Export Video</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Regular sidebar (for desktop)
   return (
     <div className="w-16 md:w-64 bg-surface-dark border-r border-gray-800 flex flex-col">
       {/* Collapsed Sidebar (Mobile) */}
